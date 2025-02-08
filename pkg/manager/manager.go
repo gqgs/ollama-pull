@@ -14,6 +14,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+const (
+	registry = "registry.ollama.ai"
+)
+
 type Model struct {
 	Name     string   `json:"name"`
 	Tag      string   `json:"tag"`
@@ -100,11 +104,11 @@ func (m Model) Pull() error {
 }
 
 func (m Model) manifestFile() string {
-	return filepath.Join(m.Base, "manifests", "registry.ollama.ai", "library", m.Name, m.Tag)
+	return filepath.Join(m.Base, "manifests", registry, "library", m.Name, m.Tag)
 }
 
 func (m Model) manifestURL() string {
-	return fmt.Sprintf("https://registry.ollama.ai/v2/library/%s/manifests/%s", m.Name, m.Tag)
+	return fmt.Sprintf("https://%s/v2/library/%s/manifests/%s", registry, m.Name, m.Tag)
 }
 
 func (m Model) downloadBlobs() error {
@@ -127,7 +131,7 @@ func (m Model) downloadBlobs() error {
 	for _, blob := range blobs {
 		group.Go(func() error {
 			slog.Info("downloading blob", "blob", blob.Digest)
-			url := fmt.Sprintf("https://registry.ollama.ai/v2/library/%s/blobs/%s", m.Name, blob.Digest)
+			url := fmt.Sprintf("https://%s/v2/library/%s/blobs/%s", registry, m.Name, blob.Digest)
 			resp, err := http.Get(url)
 			if err != nil {
 				return nil
