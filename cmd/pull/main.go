@@ -9,7 +9,7 @@ import (
 
 type options struct {
 	model     string `arg:"name of model to be downloaded,positional"`
-	directory string `arg:"models diretory,required"`
+	directory string `arg:"models diretory (OLLAMA_MODELS),required"`
 }
 
 func main() {
