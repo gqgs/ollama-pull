@@ -19,33 +19,31 @@ const (
 )
 
 type Model struct {
-	Name     string   `json:"name"`
-	Tag      string   `json:"tag"`
-	Base     string   `json:"base"`
-	Manifest Manifest `json:"manifest"`
+	Name     string `json:"name"`
+	Tag      string `json:"tag"`
+	Base     string `json:"base"`
+	Manifest struct {
+		SchemaVersion int    `json:"schemaVersion"`
+		MediaType     string `json:"mediaType"`
+		Config        struct {
+			MediaType string `json:"mediaType"`
+			Digest    string `json:"digest"`
+			Size      int64  `json:"size"`
+		} `json:"config"`
+		Layers []struct {
+			MediaType string `json:"mediaType"`
+			Digest    string `json:"digest"`
+			Size      int64  `json:"size"`
+		} `json:"layers"`
+	} `json:"manifest"`
 }
 
-type Manifest struct {
-	SchemaVersion int    `json:"schemaVersion"`
-	MediaType     string `json:"mediaType"`
-	Config        struct {
-		MediaType string `json:"mediaType"`
-		Digest    string `json:"digest"`
-		Size      int64  `json:"size"`
-	} `json:"config"`
-	Layers []struct {
-		MediaType string `json:"mediaType"`
-		Digest    string `json:"digest"`
-		Size      int64  `json:"size"`
-	} `json:"layers"`
-}
-
-type Blob struct {
+type blob struct {
 	Digest string
 	Size   int64
 }
 
-// NewModel and parses the model name and handles the follwing formats:
+// NewModel and parses the model name and handles the following formats:
 // <model> (e.g., "deepseek-r1")
 // <model:tag> (e.g., "deepseek-r1:14b")
 // In the first case "latest" will be the implied tag
@@ -113,14 +111,14 @@ func (m Model) manifestURL() string {
 
 func (m Model) downloadBlobs() error {
 	// blobs = layers + config
-	blobs := make([]Blob, 0, len(m.Manifest.Layers)+1)
+	blobs := make([]blob, 0, len(m.Manifest.Layers)+1)
 	for _, layer := range m.Manifest.Layers {
-		blobs = append(blobs, Blob{
+		blobs = append(blobs, blob{
 			Digest: layer.Digest,
 			Size:   layer.Size,
 		})
 	}
-	blobs = append(blobs, Blob{
+	blobs = append(blobs, blob{
 		Digest: m.Manifest.Config.Digest,
 		Size:   m.Manifest.Config.Size,
 	})
@@ -134,7 +132,7 @@ func (m Model) downloadBlobs() error {
 			url := fmt.Sprintf("https://%s/v2/library/%s/blobs/%s", registry, m.Name, blob.Digest)
 			resp, err := http.Get(url)
 			if err != nil {
-				return nil
+				return fmt.Errorf("failed to download blob: %w", err)
 			}
 			defer resp.Body.Close()
 
