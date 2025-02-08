@@ -139,6 +139,7 @@ func (m Model) downloadBlobs() error {
 			if err != nil {
 				return fmt.Errorf("failed to download blob: %w", err)
 			}
+			defer file.Close()
 
 			if err := file.Truncate(blob.Size); err != nil {
 				slog.Warn("failed to truncate file", "blob", blob.Digest)
