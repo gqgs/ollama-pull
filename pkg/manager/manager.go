@@ -92,6 +92,10 @@ func (m Model) Pull() error {
 		return fmt.Errorf("failed to download blobs: %w", err)
 	}
 
+	if err := os.MkdirAll(filepath.Dir(manifestFile), os.ModePerm); err != nil {
+		return fmt.Errorf("failed creating directory: %w", err)
+	}
+
 	file, err := os.Create(manifestFile)
 	if err != nil {
 		return fmt.Errorf("failed to create manifest file: %w", err)
@@ -137,6 +141,11 @@ func (m Model) downloadBlobs() error {
 			defer resp.Body.Close()
 
 			path := filepath.Join(m.Base, "blobs", blob.Digest)
+
+			if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+				return fmt.Errorf("failed creating directory: %w", err)
+			}
+
 			file, err := os.Create(path)
 			if err != nil {
 				return fmt.Errorf("failed to download blob: %w", err)
