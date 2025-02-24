@@ -1,2 +1,4 @@
+github.com/gqgs/argsgen/v2 v2.0.4 h1:lMXXboKIa/jlycQuYSCTLENLQEsa8Jzc3DRCv1rDYUc=
+github.com/gqgs/argsgen/v2 v2.0.4/go.mod h1:bw8tBgQ17D4acHuVQY6fd9JplajRwUc7IvtbUH3V0ao=
 golang.org/x/sync v0.11.0 h1:GGz8+XQP4FvTTrjZPzNKTMFtSXH80RAzG+5ghFPgK9w=
 golang.org/x/sync v0.11.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=

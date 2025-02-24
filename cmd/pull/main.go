@@ -7,7 +7,7 @@ import (
 	"runtime/pprof"
 )
 
-//go:generate go run github.com/gqgs/argsgen@latest
+//go:generate go tool argsgen
 
 type options struct {
 	model     string `arg:"name of model to be downloaded,positional"`
