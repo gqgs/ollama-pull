@@ -36,7 +36,6 @@ type Model struct {
 			Size      int64  `json:"size"`
 		} `json:"layers"`
 	} `json:"manifest"`
-	downloader downloader.Downloader
 }
 
 type blob struct {
@@ -48,7 +47,7 @@ type blob struct {
 // <model> (e.g., "deepseek-r1")
 // <model:tag> (e.g., "deepseek-r1:14b")
 // In the first case "latest" will be the implied tag
-func NewModel(model, base string, downloader downloader.Downloader) (*Model, error) {
+func NewModel(model, base string) (*Model, error) {
 	before, after, found := strings.Cut(model, ":")
 
 	if found && after == "" {
@@ -64,14 +63,13 @@ func NewModel(model, base string, downloader downloader.Downloader) (*Model, err
 	}
 
 	return &Model{
-		Name:       before,
-		Tag:        after,
-		Base:       base,
-		downloader: downloader,
+		Name: before,
+		Tag:  after,
+		Base: base,
 	}, nil
 }
 
-func (m Model) Pull() error {
+func (m Model) Pull(downloader downloader.Downloader) error {
 	manifestFile := m.manifestFile()
 	if _, err := os.Stat(manifestFile); !os.IsNotExist(err) {
 		slog.Warn("manifest file already exists", "file", manifestFile)
@@ -90,7 +88,7 @@ func (m Model) Pull() error {
 		return fmt.Errorf("failed to decode manifest: %w", err)
 	}
 
-	if err := m.downloadBlobs(); err != nil {
+	if err := m.downloadBlobs(downloader); err != nil {
 		return fmt.Errorf("failed to download blobs: %w", err)
 	}
 
@@ -115,7 +113,7 @@ func (m Model) manifestURL() string {
 	return fmt.Sprintf("https://%s/v2/library/%s/manifests/%s", registry, m.Name, m.Tag)
 }
 
-func (m Model) downloadBlobs() error {
+func (m Model) downloadBlobs(downloader downloader.Downloader) error {
 	// blobs = layers + config
 	blobs := make([]blob, 0, len(m.Manifest.Layers)+1)
 	for _, layer := range m.Manifest.Layers {
@@ -143,7 +141,7 @@ func (m Model) downloadBlobs() error {
 				return fmt.Errorf("failed creating directory: %w", err)
 			}
 
-			return m.downloader.Download(url, path)
+			return downloader.Download(url, path)
 		})
 	}
 	return group.Wait()

@@ -36,7 +36,7 @@ func TestNewModel_Valid(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := NewModel(tc.modelStr, tc.base, nil)
+			result, err := NewModel(tc.modelStr, tc.base)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -72,7 +72,7 @@ func TestNewModel_Invalid(t *testing.T) {
 
 	for _, tc := range invalidCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := NewModel(tc.modelStr, tc.base, nil)
+			_, err := NewModel(tc.modelStr, tc.base)
 			if err == nil {
 				t.Errorf("expected error for invalid model string %q, but got none", tc.modelStr)
 			}
