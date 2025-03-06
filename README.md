@@ -3,7 +3,7 @@
 
 `ollama-pull` is a lightweight alternative to the official [ollama](https://github.com/ollama/ollama) pull command.
 
-It aims to increase the speed of pulling from the [ollama](https://ollama.com/) registry by removing some overheads that might not be necessary for particular use cases. It supports both the HTTP standard library and `aria2c` download backends for enhanced performance and reliability.
+It aims to increase the speed of pulling from the [ollama](https://ollama.com/) registry by removing some overheads that might not be necessary for particular use cases. It supports both the HTTP standard library and [aria2c](https://aria2.github.io/manual/en/html/index.html) download backends for enhanced performance and reliability.
 
 
 ### Usage
