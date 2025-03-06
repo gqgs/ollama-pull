@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/gqgs/ollama-pull/pkg/downloader"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -36,6 +36,7 @@ type Model struct {
 			Size      int64  `json:"size"`
 		} `json:"layers"`
 	} `json:"manifest"`
+	downloader downloader.Downloader
 }
 
 type blob struct {
@@ -47,7 +48,7 @@ type blob struct {
 // <model> (e.g., "deepseek-r1")
 // <model:tag> (e.g., "deepseek-r1:14b")
 // In the first case "latest" will be the implied tag
-func NewModel(model, base string) (*Model, error) {
+func NewModel(model, base string, downloader downloader.Downloader) (*Model, error) {
 	before, after, found := strings.Cut(model, ":")
 
 	if found && after == "" {
@@ -63,9 +64,10 @@ func NewModel(model, base string) (*Model, error) {
 	}
 
 	return &Model{
-		Name: before,
-		Tag:  after,
-		Base: base,
+		Name:       before,
+		Tag:        after,
+		Base:       base,
+		downloader: downloader,
 	}, nil
 }
 
@@ -133,34 +135,15 @@ func (m Model) downloadBlobs() error {
 	for _, blob := range blobs {
 		group.Go(func() error {
 			slog.Info("downloading blob", "blob", blob.Digest)
+
 			url := fmt.Sprintf("https://%s/v2/library/%s/blobs/%s", registry, m.Name, blob.Digest)
-			resp, err := http.Get(url)
-			if err != nil {
-				return fmt.Errorf("failed to download blob: %w", err)
-			}
-			defer resp.Body.Close()
 
 			path := filepath.Join(m.Base, "blobs", blob.Digest)
-
 			if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
 				return fmt.Errorf("failed creating directory: %w", err)
 			}
 
-			file, err := os.Create(path)
-			if err != nil {
-				return fmt.Errorf("failed to download blob: %w", err)
-			}
-			defer file.Close()
-
-			if err := file.Truncate(blob.Size); err != nil {
-				slog.Warn("failed to truncate file", "blob", blob.Digest)
-			}
-
-			slog.Info("writing blob to disk", "blob", blob.Digest)
-			if _, err := io.Copy(file, resp.Body); err != nil {
-				return fmt.Errorf("failed to write blob to file: %w", err)
-			}
-			return nil
+			return m.downloader.Download(url, path)
 		})
 	}
 	return group.Wait()

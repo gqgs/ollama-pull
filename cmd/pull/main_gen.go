@@ -13,6 +13,7 @@ func (o *options) flagSet() *flag.FlagSet {
     flagSet := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
     flagSet.StringVar(&o.model, "model", o.model, "name of model to be downloaded")
     flagSet.StringVar(&o.directory, "directory", o.directory, "models diretory (OLLAMA_MODELS)")
+    flagSet.StringVar(&o.downloader, "downloader", o.downloader, "downloader type")
     flagSet.BoolVar(&o.profile, "profile", o.profile, "create CPU profile")
     return flagSet
 }
