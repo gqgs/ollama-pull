@@ -12,7 +12,7 @@ type aria struct {
 }
 
 func (a *aria) Download(url, output string) error {
-	cmd := exec.Command(a.aria2c, url, "--async-dns=false", "--dir", filepath.Dir(output), "-o", filepath.Base(output))
+	cmd := exec.Command(a.aria2c, url, "--async-dns=false", "--dir", filepath.Dir(output), "-c", "-o", filepath.Base(output))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
